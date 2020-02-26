@@ -5,6 +5,10 @@
 #ifndef DATASTRUCTURE_AVL_HPP
 #define DATASTRUCTURE_AVL_HPP
 
+void pass() {
+    return;
+}
+
 /* <Node Structure> */
 template <class T>
 struct AVL_Node {
@@ -314,7 +318,7 @@ AVL<T>::internal_remove(AVL_Node<T> *rm) {
      *  1
      */
     else {
-        /* audit==nullptr: only root remain */
+        /* audit==nullptr: only root remain (process in else branch) */
         if (audit) {
             upd = audit;
             if (audit->lchild == rm) {
@@ -325,6 +329,9 @@ AVL<T>::internal_remove(AVL_Node<T> *rm) {
                 if (audit->lchild) upd = audit->lchild;
             }
         }
+        /* necessary */
+        /* otherwise when AVL class destructs, could lead to leak problem */
+        else rootptr = nullptr;
     }
 
     rm->rchild = nullptr;
@@ -349,25 +356,28 @@ AVL<T>::updateAVL(AVL_Node<T> *modified, bool del) {
     modified->updateHeight();
 
     /* find the lowest imbalance point */
-    while (modified->father && -2<modified->father->balance() && modified->father->balance()<2)
-        modified = modified->father;
-    /* no rotation when reach root */
-    if (!modified->father) return;
+    while (modified->father && -2<modified->balance() && modified->balance()<2) modified = modified->father;
 
-    if (del) {
-        if (modified->father->lchild==modified && modified->father->rchild) modified = modified->father->rchild;
-        else if (modified->father->rchild==modified && modified->father->lchild) modified = modified->father->lchild;
-    }
+    /* left subTree is higher */
+    if (2<=modified->balance()) {
+        modified = modified->lchild;
 
-    /* situations - rotate once */
-    if (modified->balance()<0) {
-        if (modified->father->balance()<0) RR(modified);
-        else RL(modified->rchild);
-    }
-    else {
-        if (modified->father->balance()<0) LR(modified->lchild);
+        /* left subTree's right subTree is higher */
+        if (modified->balance()<0) RL(modified->rchild);
+        /* left subTree's left subTree is not lower */
         else LL(modified);
     }
+    /* right subTree is higher */
+    else if (modified->balance()<=-2) {
+        modified = modified->rchild;
+
+        /* right subTree's left subTree is higher */
+        if (0<modified->balance()) LR(modified->lchild);
+        /* right subTree's right subTree is not lower */
+        else RR(modified);
+    }
+    /* reached balanced root -> whole tree is balanced */
+    else return;
 
     /* update height */
     if (modified->lchild) modified->lchild->updateHeight();
