@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/avl.hpp
+
+../include/bTree.hpp
+algorithm
+-
+cstring
+-
+
+/Users/willxu/Programming/projects/DataStructure/main.cpp
+iostream
+-
+random
+-
+algorithm
+-
+vector
+-
+avl.hpp
+/Users/willxu/Programming/projects/DataStructure/avl.hpp
+bTree.hpp
+/Users/willxu/Programming/projects/DataStructure/bTree.hpp
+

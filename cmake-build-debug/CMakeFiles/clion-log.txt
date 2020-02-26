@@ -1,0 +1,15 @@
+/usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/local/bin/gcc-9 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-9 -G "CodeBlocks - Unix Makefiles" /Users/willxu/Programming/projects/DataStructure
+CMake Warning at /usr/local/Cellar/cmake/3.16.3/share/cmake/Modules/Platform/Darwin-Initialize.cmake:131 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.16.3/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/willxu/Programming/projects/DataStructure/cmake-build-debug
