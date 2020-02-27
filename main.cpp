@@ -18,37 +18,37 @@ int ra[8] = {-1565019504, -390660289, 2122435038, -408257286, 631183611, -188636
 
 int ord[] = {7, 2, 4, 1, 5, 6, 3, 0};
 
-int main() {
-    AVL<int> a;
-    std::random_device rand;
-    for (int i=0 ; i<8 ; i++) {
-        ra[i] = rand();
-        a.insert(ra[i]);
-        std::cout << ra[i] << ',' << ' ';
-    }
-
-    std::cout.put('\n');
-
-    std::vector<int> output_order({7, 2, 4, 1, 5, 6, 3, 0});
-    int change_times = rand() % 10000000;
-    for (int i=0 ; i<change_times ; i++) std::next_permutation(output_order.begin(), output_order.end());
-
-    for (auto & i : output_order) std::cout << i << ',' << ' ';
-
-    std::cout.put('\n');
-
-    for (int i=0 ; i<=7 ; i++)
-        std::cout << output_order[i] << ':' << a.remove(ra[output_order[i]]) << ' ';
-
-    return 0;
-}
-
 //int main() {
-//    bTree<int, 4> bt;
-//    for (int i=0 ; i<10000 ; i++)
-//        bt.insert(i);
+//    AVL<int> a;
+//    std::random_device rand;
+//    for (int i=0 ; i<8 ; i++) {
+//        ra[i] = rand();
+//        a.insert(ra[i]);
+//        std::cout << ra[i] << ',' << ' ';
+//    }
 //
-//    std::cout << bt.find(9545) << ' ' << bt.find(10001);
+//    std::cout.put('\n');
+//
+//    std::vector<int> output_order({7, 2, 4, 1, 5, 6, 3, 0});
+//    int change_times = rand() % 10000000;
+//    for (int i=0 ; i<change_times ; i++) std::next_permutation(output_order.begin(), output_order.end());
+//
+//    for (auto & i : output_order) std::cout << i << ',' << ' ';
+//
+//    std::cout.put('\n');
+//
+//    for (int i=0 ; i<=7 ; i++)
+//        std::cout << output_order[i] << ':' << a.remove(ra[output_order[i]]) << ' ';
 //
 //    return 0;
 //}
+
+int main() {
+    bTree<int, 4> bt;
+    for (int i=0 ; i<10000 ; i++)
+        bt.insert(i);
+
+    std::cout << bt.find(9545) << ' ' << bt.find(10001);
+
+    return 0;
+}
