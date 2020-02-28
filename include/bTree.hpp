@@ -11,30 +11,32 @@
 #define __constructor__
 #define __destructor__
 
-template <class T, size_t order=6>
+typedef int index_t;
+
+template <class T, index_t order=6>
 class bTree {
 private:
     // bTree_Node class
     struct bTree_Node {
-        size_t size;  // numbers of element
+        index_t size;  // numbers of element
         T values[order+1];  // value
         bTree_Node *children[order+2];  // children pointers
         bTree_Node *father;  // easy to trace back
 
         bTree_Node() = default;
         bTree_Node(const T & val, bTree_Node *father, bTree_Node *lchild, bTree_Node *rchild);
-        size_t withinNode_find(const T & val);
-        void insert_at(size_t pos, const T & val, bTree_Node *child_pointer, bTree_Node *rchild_pointer);
+        index_t withinNode_find(const T & val);
+        void insert_at(index_t pos, const T & val, bTree_Node *child_pointer, bTree_Node *rchild_pointer);
     };  // class bTree_Node
 
     // stores internal searching result
     // first: Node where result is
     // second: result's position in Node
     // tip: if result do not matches, then it indicates the location to insert into (lower bound)
-    typedef std::pair<bTree_Node*, size_t> result;
+    typedef std::pair<bTree_Node*, index_t> result;
 
     bTree_Node *rootptr;
-    const size_t min = order/2 + 1;
+    const index_t min = order/2 + 1;
 
     result internal_find(const T & val);
     static T resolve(const result & r);
@@ -46,7 +48,7 @@ public:
     int find(const T & val);
 };  // class bTree
 
-template <class T, size_t order>
+template <class T, index_t order>
 __constructor__
 bTree<T, order>::bTree_Node::bTree_Node(const T & val, bTree<T, order>::bTree_Node *fa, bTree<T, order>::bTree_Node *lchild, bTree<T, order>::bTree_Node *rchild) {
     memset(values, 0, (order+1)*sizeof(T));
@@ -57,8 +59,8 @@ bTree<T, order>::bTree_Node::bTree_Node(const T & val, bTree<T, order>::bTree_No
     size = 1;
 }
 
-template <class T, size_t order>
-size_t
+template <class T, index_t order>
+index_t
 bTree<T, order>::bTree_Node::withinNode_find(const T & val) {
     T *result = std::lower_bound((T*)(values), (T*)(values)+size-1, val);
 
@@ -67,12 +69,12 @@ bTree<T, order>::bTree_Node::withinNode_find(const T & val) {
     return result - (T*)(values);
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 void
-bTree<T, order>::bTree_Node::insert_at(size_t pos, const T & val, bTree_Node *lchild_pointer, bTree_Node *rchild_pointer) {
+bTree<T, order>::bTree_Node::insert_at(index_t pos, const T & val, bTree_Node *lchild_pointer, bTree_Node *rchild_pointer) {
     children[size+1] = children[size];
 
-    for (size_t i=size-1 ; i>pos ; i--) {
+    for (index_t i=size-1 ; i>pos ; i--) {
         values[i+1] = values[i];
         children[i+1] = children[i];
     }
@@ -83,13 +85,13 @@ bTree<T, order>::bTree_Node::insert_at(size_t pos, const T & val, bTree_Node *lc
     size++;
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 typename bTree<T, order>::result
 bTree<T, order>::internal_find(const T & val) {
-    if (!rootptr) return std::make_pair<bTree_Node*, size_t>(nullptr, 0);
+    if (!rootptr) return std::make_pair<bTree_Node*, index_t>(nullptr, 0);
 
     auto iter = rootptr;
-    size_t result = 0;
+    index_t result = 0;
     while (true) {
         result = iter->withinNode_find(val);  // **open interval** feature of stl
         if (iter->values[result]==val || !iter->children[result+1]) break;  // found || no children to go
@@ -99,13 +101,13 @@ bTree<T, order>::internal_find(const T & val) {
     return std::make_pair(iter, result);
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 T
 bTree<T, order>::resolve(const bTree<T, order>::result & r) {
     return r.first->values[r.second];
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 void
 bTree<T, order>::split(bTree<T, order>::bTree_Node *sp) {
     if (!sp) return;  // (else)
@@ -117,7 +119,8 @@ bTree<T, order>::split(bTree<T, order>::bTree_Node *sp) {
     T sendUp = sp->values[(order/2)];
 
     rchild->children[0] = sp->children[(order/2)+1];
-    for (size_t i=(order/2)+1, j=0 ; i<=order ; i++, j++) {
+    if (rchild->children[0]) rchild->children[0]->father = rchild;  // important - New father!
+    for (index_t i=(order/2)+1, j=0 ; i<=order ; i++, j++) {
         rchild->values[j] = sp->values[i];
         rchild->size++;
 
@@ -128,7 +131,7 @@ bTree<T, order>::split(bTree<T, order>::bTree_Node *sp) {
     sp->size = order - rchild->size;
     /*
     sp->children[order/2] = 0;
-    for (size_t i=(order/2)+1 ; i<order ; i++) {
+    for (index_t i=(order/2)+1 ; i<order ; i++) {
         sp->children[i] = nullptr;
         sp->values[i] = 0;
     }
@@ -147,13 +150,13 @@ bTree<T, order>::split(bTree<T, order>::bTree_Node *sp) {
     }
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 __constructor__
 bTree<T, order>::bTree()
 :rootptr(nullptr)
 {}
 
-template <class T, size_t order>
+template <class T, index_t order>
 void
 bTree<T, order>::insert(const T & val) {
     if (!rootptr) {
@@ -169,7 +172,7 @@ bTree<T, order>::insert(const T & val) {
     if (res.first->size>order) split(res.first);
 }
 
-template <class T, size_t order>
+template <class T, index_t order>
 int
 bTree<T, order>::find(const T & val) {
     auto res = internal_find(val);
