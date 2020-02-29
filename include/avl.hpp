@@ -5,10 +5,6 @@
 #ifndef DATASTRUCTURE_AVL_HPP
 #define DATASTRUCTURE_AVL_HPP
 
-void pass() {
-    return;
-}
-
 /* <Node Structure> */
 template <class T>
 struct AVL_Node {

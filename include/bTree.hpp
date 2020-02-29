@@ -35,17 +35,22 @@ private:
     // tip: if result do not matches, then it indicates the location to insert into (lower bound)
     typedef std::pair<bTree_Node*, index_t> result;
 
+    // member variables
     bTree_Node *rootptr;
-    const index_t min = order/2 + 1;
+    const index_t min = order/2;
 
+    // private member functions
     result internal_find(const T & val);
-    static T resolve(const result & r);
+    static int resolve(const result & r, const T & val);
     void split(bTree_Node *sp);
+
+    void merge(bTree_Node l_sibling, bTree_Node r_sibling);
 
 public:
     bTree();
     void insert(const T & val);
     int find(const T & val);
+    void remove(const T & val);
 };  // class bTree
 
 template <class T, index_t order>
@@ -102,9 +107,10 @@ bTree<T, order>::internal_find(const T & val) {
 }
 
 template <class T, index_t order>
-T
-bTree<T, order>::resolve(const bTree<T, order>::result & r) {
-    return r.first->values[r.second];
+int
+bTree<T, order>::resolve(const bTree<T, order>::result & r, const T & val) {
+    if (r.second==-1 || r.first->values[r.second]!=val) return 0;  // (else)
+    return 1;
 }
 
 template <class T, index_t order>
@@ -159,13 +165,22 @@ bTree<T, order>::bTree()
 template <class T, index_t order>
 void
 bTree<T, order>::insert(const T & val) {
+    /*
+     * insert procedures:
+     *  1. whole b tree is empty
+     *      - make new root
+     *  2. b tree is not empty
+     *      - insert on leaf
+     *      2.1. if a leaf max out after insertion
+     *          - split the leaf recursively
+     */
     if (!rootptr) {
         rootptr = new bTree_Node(val, nullptr, nullptr, nullptr);
         return;
     }  // (else)
 
     auto res = internal_find(val);
-    if (resolve(res)==val) return;  // (else)
+    if (resolve(res, val)) return;  // (else)
 
     res.first->insert_at(res.second, val, nullptr, nullptr);
 
@@ -177,8 +192,87 @@ int
 bTree<T, order>::find(const T & val) {
     auto res = internal_find(val);
 
-    if (res.second < res.first->size && resolve(res)==val) return 1;
+    if (res.second < res.first->size && resolve(res, val)) return 1;
     return 0;
+}
+
+template <class T, index_t order>
+void
+bTree<T, order>::remove(const T & val) {
+    /*
+     * remove procedures:
+     *  1. remove a value on branch
+     *      - find the greatest(smallest) value on left(right) subtree, replace the to-be-removed value
+     *      - continue on 2.: remove the value on the leaf
+     *  2. remove a value on leaf
+     *      - remove the value and update size of the node
+     *      2.1. if the leaf node is root
+     *          2.1.1. if root is empty
+     *              - reset rootptr to nullptr
+     *          2.1.2. else (if the root is not empty)
+     *              - pass || do nothing
+     *      2.2. else (if the leaf node isn't root)
+     *          2.2.1. if the node size >= `bTree<T, order>::min`
+     *              - pass || do nothing
+     *          2.2.2. else (if the node size < `bTree<T, order>::min`)
+     *              2.2.2.1. if more than one sibling's size > `bTree<T, order>::min`
+     *                  - lend a value from sibling: sibling->father, father->this
+     *              2.2.2.2. if both siblings's size is less than `bTree<T, order>::min`
+     *                  - merge the node with its sibling
+     */
+
+    result res = internal_find(val);
+    result orig = res;
+    if (resolve(res, val)) return;  // value not exist, (else)
+
+    auto get_lchild = [res] { return res.first->children[res.second]; };
+    auto get_rchild = [res] { return res.first->children[res.second + 1]; };
+    auto get_sibling = [res](char lr) {
+        if (!res.first->father || (lr != 'l' && lr != 'r')) return nullptr;
+
+        bTree_Node *fa = res.first->father;
+        index_t pos = fa->withinNode_find(res.first->values[res.second]);
+
+        if (lr == 'l') {
+            if (pos < 0) return nullptr;
+            else return fa->children[pos];
+        } else /* if (lr=='r') */ {
+            if (fa->size < pos + 2) return nullptr;
+            else return fa->children[pos + 2];
+        }
+    };
+    auto get_size = [res] { return res.first->size; };
+
+    if (get_lchild) {
+        if (get_lchild->size < get_rchild->size) {
+            res = std::make_pair(get_rchild, 0);
+            while (get_lchild) res = std::make_pair(get_lchild, 0);
+        } else {
+            res = std::make_pair(get_lchild, get_lchild->size - 1);
+            while (get_lchild) res = std::make_pair(get_rchild, get_rchild->size - 1);
+        }
+
+        orig.first->values[orig.second] = res.first->values[res.second];
+    }
+
+    // deletion
+    // no need to care for children
+    // because this operation is always on leaf
+    for (index_t i = res.second; i < res.first->size - 1; i++) res.first->values[i] = res.first->values[i + 1];
+    res.first->size--;
+
+    if (get_size >= min) return;  // (else)
+
+    bTree_Node *modify = get_sibling('r');
+    bTree_Node *ls = get_sibling('l');
+    if (!modify || modify->size < ls->size) modify = ls;
+
+    if (modify->size>min) {
+        //
+    }
+    else {
+        // merge
+    }
 }
 
 #undef __constructor__
