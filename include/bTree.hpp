@@ -260,6 +260,7 @@ bTree<T, order>::remove(const T & val) {
     // because this operation is always on leaf
     for (index_t i = res.second; i < res.first->size - 1; i++) res.first->values[i] = res.first->values[i + 1];
     res.first->size--;
+    res.second--;
 
     if (get_size >= min) return;  // (else)
 
@@ -268,10 +269,17 @@ bTree<T, order>::remove(const T & val) {
     if (!modify || modify->size < ls->size) modify = ls;
 
     if (modify->size>min) {
-        //
+        // specify left or right sibling to modify
+        if (modify==ls) {
+            // TODO: modify insertion, complete father->withinNode_find in previous finding.
+            res.first->insert_at(res.second, res.first->father->values[res.first->father->withinNode_find(val)], );
+        }
+        else {
+
+        }
     }
     else {
-        // merge
+        __constructor__
     }
 }
 
