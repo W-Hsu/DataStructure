@@ -272,14 +272,22 @@ bTree<T, order>::remove(const T & val) {
         // specify left or right sibling to modify
         if (modify==ls) {
             // TODO: modify insertion, complete father->withinNode_find in previous finding.
-            res.first->insert_at(res.second, res.first->father->values[res.first->father->withinNode_find(val)], );
+            index_t father_pos = res.first->father->withinNode_find(val);
+            res.first->insert_at(res.second, res.first->father->values[father_pos], nullptr, nullptr);
+            res.first->father->values[father_pos] = modify->values[modify->size];
         }
         else {
+            index_t father_pos = res.first->father->withinNode_find(val);
+            res.first->insert_at(res.second, res.first->father->values[father_pos], nullptr, nullptr);
+            res.first->father->values[father_pos] = modify->values[0];
 
+            for (index_t i=0 ; i<modify->size-1 ; i++) modify->values[i] = modify->values[i+1];
         }
+        modify->size --;
     }
     else {
-        __constructor__
+        if (modify==ls) merge(modify, res.first);
+        else merge(res.first, modify);
     }
 }
 
